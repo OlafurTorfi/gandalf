@@ -6,7 +6,7 @@ export interface IHistorySettings {
     min: number
 }
 
-export type ConnectionType = 'jt400' | 'postgres' | undefined
+export type ConnectionType = 'jt400' | 'postgres' | 'sqlite' | undefined
 
 export interface IConnectionInfo {
     type: ConnectionType

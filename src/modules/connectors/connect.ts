@@ -1,6 +1,7 @@
 import { IConnectionInfo } from '../settings'
 import { connect as jt400Connect } from './jt400Connector'
 import { connect as pgConnect } from './pgConnector'
+import { connect as sqliteConnect } from './sqliteConnector'
 import { IClientConnection } from './types'
 
 export const connect = async (
@@ -9,6 +10,8 @@ export const connect = async (
 ): Promise<IClientConnection> => {
     if (settings.type === 'postgres') {
         return pgConnect(options, settings)
+    } else if (settings.type === 'sqlite') {
+        return sqliteConnect(options, settings)
     } else {
         return jt400Connect(options, settings)
     }

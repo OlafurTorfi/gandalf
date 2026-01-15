@@ -12,7 +12,7 @@ export const createEditConnection = (
     const image = prop()
     let name = ''
     const connectionType = prop('')
-    const connectionTypes = ['jt400', 'postgres']
+    const connectionTypes = ['jt400', 'postgres', 'sqlite']
     let host = ''
     let database = ''
     let username = ''
@@ -51,6 +51,17 @@ export const createEditConnection = (
     }
     reset()
     const save = () => {
+        // For SQLite, create a clean history filename from the database path
+        let historyFileName = host
+        if (connectionType() === 'sqlite') {
+            // Extract filename from path and sanitize it
+            const dbFileName = host.split(/[/\\]/).pop() || 'sqlite'
+            // Remove extension and sanitize
+            historyFileName = dbFileName
+                .replace(/\.(db|sqlite|sqlite3)$/i, '')
+                .replace(/[^a-zA-Z0-9_-]/g, '_')
+        }
+
         const connection: IConnectionInfo = {
             type: connectionType(),
             name,
@@ -62,7 +73,7 @@ export const createEditConnection = (
             theme: theam(),
             autoCommit: autoCommit(),
             history: {
-                file: host + '.history',
+                file: historyFileName + '.history',
                 min: 200,
                 max: 400,
             },
@@ -260,23 +271,28 @@ export const createEditConnection = (
                                     m('div.form-element', [
                                         m('input', {
                                             class: 'h-fill',
-                                            placeholder: 'Host',
+                                            placeholder:
+                                                connectionType() === 'sqlite'
+                                                    ? 'Database File Path'
+                                                    : 'Host',
                                             value: host,
                                             onchange: e => {
                                                 host = e.target.value
                                             },
                                         }),
                                     ]),
-                                    m('div.form-element', [
-                                        m('input', {
-                                            class: 'h-fill',
-                                            placeholder: 'Database',
-                                            value: database,
-                                            onchange: e => {
-                                                database = e.target.value
-                                            },
-                                        }),
-                                    ]),
+                                    connectionType() !== 'sqlite'
+                                        ? m('div.form-element', [
+                                              m('input', {
+                                                  class: 'h-fill',
+                                                  placeholder: 'Database',
+                                                  value: database,
+                                                  onchange: e => {
+                                                      database = e.target.value
+                                                  },
+                                              }),
+                                          ])
+                                        : undefined,
                                     m('div.form-element', [
                                         m('input', {
                                             class: 'h-fill',
@@ -287,16 +303,18 @@ export const createEditConnection = (
                                             },
                                         }),
                                     ]),
-                                    m('div.form-element', [
-                                        m('input', {
-                                            class: 'h-fill',
-                                            placeholder: 'Username',
-                                            value: username,
-                                            onchange: e => {
-                                                username = e.target.value
-                                            },
-                                        }),
-                                    ]),
+                                    connectionType() !== 'sqlite'
+                                        ? m('div.form-element', [
+                                              m('input', {
+                                                  class: 'h-fill',
+                                                  placeholder: 'Username',
+                                                  value: username,
+                                                  onchange: e => {
+                                                      username = e.target.value
+                                                  },
+                                              }),
+                                          ])
+                                        : undefined,
                                     m('div.form-element', [
                                         m(
                                             'select',
@@ -323,7 +341,8 @@ export const createEditConnection = (
                                             )
                                         ),
                                     ]),
-                                    connectionType() !== 'postgres'
+                                    connectionType() !== 'postgres' &&
+                                    connectionType() !== 'sqlite'
                                         ? m('div', [
                                               m('input', {
                                                   type: 'checkbox',
@@ -366,13 +385,15 @@ export const createEditConnection = (
                                 ]),
                             ]),
                             m('div.container-extra pb0', [
-                                connectionType() !== 'postgres'
+                                connectionType() !== 'postgres' &&
+                                connectionType() !== 'sqlite'
                                     ? m(
                                           'h3.extra-title',
                                           'Connection properties'
                                       )
                                     : undefined,
-                                connectionType() !== 'postgres'
+                                connectionType() !== 'postgres' &&
+                                connectionType() !== 'sqlite'
                                     ? m(
                                           'div.connection-props',
                                           properties().map(property =>
