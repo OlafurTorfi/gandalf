@@ -1,6 +1,6 @@
 {
     "name": "captain-sql",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "sql client",
     "main": "app.js",
     "dependencies": {
